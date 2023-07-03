@@ -2,6 +2,7 @@ const express = require('express')
 const app = express()
 const mongoose = require('mongoose')
 const cors = require('cors')
+const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken');
 const User = require('./models/User.js')
@@ -12,7 +13,11 @@ const Salt = bcrypt.genSaltSync(10)
 const jwtSecret = 'dfdflkfnkvkwnefknknmwekf'
 
 app.use(express.json())
-app.use(cors())
+app.use(cors({
+    credentials: true,
+    origin: 'http://localhost:5173',
+}));
+app.use(cookieParser())
 
 
 
@@ -24,7 +29,10 @@ app.post('/login', async (req, res) => {
     if (user) {
         const isValidPassword = bcrypt.compareSync(password, user.password)
         if (isValidPassword) {
-            jwt.sign({ email: user.email, id: user._id }, jwtSecret, {}, (err, token) => {
+            jwt.sign({
+                email: user.email,
+                id: user._id,
+            }, jwtSecret, {}, (err, token) => {
                 if (err) throw err;
                 res.cookie('token', token).json(user)
             })
@@ -34,11 +42,6 @@ app.post('/login', async (req, res) => {
     } else {
         res.json('not found')
     }
-
-
-
-
-
 })
 
 app.post('/register', async (req, res) => {
@@ -59,4 +62,18 @@ app.post('/register', async (req, res) => {
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
+})
+
+app.get('/profile', (req, res) => {
+    mongoose.connect(process.env.MONGO_URL)
+    const { token } = req.cookies
+    if (token) {
+        jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+            if (err) throw err
+            const { name, email, _id } = await User.findById(userData.id)
+            res.json({ name, email, _id })
+        })
+    } else {
+        res.json({ message: 'problems in token' })
+    }
 })

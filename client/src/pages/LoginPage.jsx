@@ -1,23 +1,32 @@
 import axios from "axios";
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useContext, useState } from "react";
+import { Link, Navigate } from "react-router-dom";
+import { UserContext } from "../UserContext.jsx";
 
 const LoginPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [redirect, setRedirect] = useState(false);
+    const { setUser } = useContext(UserContext);
 
     const handlerLoginSubmit = async (e) => {
         e.preventDefault();
 
         try {
-            await axios.post("/login", {
+            const { data } = await axios.post("/login", {
                 email,
                 password,
             });
+            setUser(data);
+            setRedirect(true);
         } catch (e) {
             alert("login failed");
         }
     };
+
+    if (redirect) {
+        return <Navigate to={"/"} />;
+    }
 
     return (
         <div className="mt-4 grow flex items-center justify-around">
