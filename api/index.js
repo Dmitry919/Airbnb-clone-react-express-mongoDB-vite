@@ -77,3 +77,7 @@ app.get('/profile', (req, res) => {
         res.json({ message: 'problems in token' })
     }
 })
+
+app.post('/logout', (req, res) => {
+    res.cookie('token', '').json(true)
+})
