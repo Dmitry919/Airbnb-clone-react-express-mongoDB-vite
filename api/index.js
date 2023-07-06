@@ -19,7 +19,9 @@ app.use(cors({
 }));
 app.use(cookieParser())
 
-
+app.get('/', (req, res) => {
+    res.json('Hola')
+})
 
 app.post('/login', async (req, res) => {
     mongoose.connect(process.env.MONGO_URL)
