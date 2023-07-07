@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import Perks from "../Perks";
+import axios from "axios";
 
 const PlacesPage = () => {
     const { action } = useParams();
@@ -8,6 +9,7 @@ const PlacesPage = () => {
     const [title, setTitle] = useState("");
     const [address, setAddress] = useState("");
     const [addedPhotos, setAddedPhotos] = useState([]);
+    const [photoLink, setPhotoLink] = useState("");
     const [description, setDescription] = useState("");
     const [perks, setPerks] = useState([]);
     const [extraInfo, setExtraInfo] = useState("");
@@ -30,6 +32,21 @@ const PlacesPage = () => {
                 {inputDescription(description)}
             </>
         );
+    };
+
+    const addPhotoByLink = async (e) => {
+        e.preventDefault();
+        const { data: photoName } = await axios.post("/upload-by-link", {
+            link: photoLink,
+        });
+        setAddedPhotos((prev) => {
+            return [...prev, photoName];
+        });
+        setPhotoLink("");
+    };
+
+    const uploadPhoto = (e) => {
+        console.log(e);
     };
 
     return (
@@ -66,6 +83,7 @@ const PlacesPage = () => {
                             "title for your place, should be short ahd catchy as in advertisement"
                         )}
                         <input
+                            className="indigo"
                             value={title}
                             onChange={(e) => setTitle(e.target.value)}
                             type="text"
@@ -74,6 +92,7 @@ const PlacesPage = () => {
 
                         {preInput("Address", "Address to this place")}
                         <input
+                            className="indigo"
                             value={address}
                             onChange={(e) => setAddress(e.target.value)}
                             type="text"
@@ -83,18 +102,40 @@ const PlacesPage = () => {
                         {preInput("Pfotos", "more = better")}
                         <div className="flex gap-2">
                             <input
-                                value={addedPhotos}
-                                onChange={(e) => setAddedPhotos(e.target.value)}
+                                className="indigo"
+                                value={photoLink}
+                                onChange={(e) => setPhotoLink(e.target.value)}
                                 type="text"
                                 placeholder={"Add using a link ...jpg"}
                             />
-                            <button className="bg-gray-200 px-4 rounded-2xl">
+                            <button
+                                onClick={addPhotoByLink}
+                                className="bg-gray-200 px-4 rounded-2xl"
+                            >
                                 Add&nbsp;photo
                             </button>
                         </div>
 
-                        <div className=" mt-2 grid grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
-                            <button className=" flex gap-1 justify-center border bg-transparent rounded-2xl p-8 text-2xl text-gray-600">
+                        <div className=" mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+                            {addedPhotos.length > 0 &&
+                                addedPhotos.map((link) => (
+                                    <div>
+                                        <img
+                                            className="rounded-2xl"
+                                            src={
+                                                "http://localhost:9001/uploads/" +
+                                                link
+                                            }
+                                            alt=""
+                                        />
+                                    </div>
+                                ))}
+                            <label className="cursor-pointer flex items-center gap-1 justify-center border bg-transparent rounded-2xl p-2 text-2xl text-gray-600">
+                                <input
+                                    type="file"
+                                    onChange={uploadPhoto}
+                                    className="hidden"
+                                />
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -110,7 +151,7 @@ const PlacesPage = () => {
                                     />
                                 </svg>
                                 Upload
-                            </button>
+                            </label>
                         </div>
 
                         {preInput("Description", "description of the place")}
@@ -143,6 +184,7 @@ const PlacesPage = () => {
                             <div>
                                 <h3 className="mt-2 -mb-1">Check in time</h3>
                                 <input
+                                    className="indigo"
                                     value={checkIn}
                                     onChange={(e) => setCheckIn(e.target.value)}
                                     type="text"
@@ -152,6 +194,7 @@ const PlacesPage = () => {
                             <div>
                                 <h3 className="mt-2 -mb-1">Check out time</h3>
                                 <input
+                                    className="indigo"
                                     value={checkOut}
                                     onChange={(e) =>
                                         setCheckOut(e.target.value)
@@ -165,6 +208,7 @@ const PlacesPage = () => {
                                     Max number of guests
                                 </h3>
                                 <input
+                                    className="indigo"
                                     value={maxGuests}
                                     onChange={(e) =>
                                         setMaxGuests(e.target.value)
