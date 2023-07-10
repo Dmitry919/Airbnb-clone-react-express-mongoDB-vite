@@ -36,17 +36,31 @@ const PlacesPage = () => {
 
     const addPhotoByLink = async (e) => {
         e.preventDefault();
-        const { data: photoName } = await axios.post("/upload-by-link", {
+        const { data: fileName } = await axios.post("/upload-by-link", {
             link: photoLink,
         });
         setAddedPhotos((prev) => {
-            return [...prev, photoName];
+            return [...prev, fileName];
         });
         setPhotoLink("");
     };
 
     const uploadPhoto = (e) => {
-        console.log(e);
+        const files = e.target.files;
+        const data = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            data.append("photos", files[i]);
+        }
+        axios
+            .post("/upload", data, {
+                headers: { "Content-type": "multipart/form-data" },
+            })
+            .then((respons) => {
+                const { data: fileNames } = respons;
+                setAddedPhotos((prev) => {
+                    return [...prev, ...fileNames];
+                });
+            });
     };
 
     return (
@@ -65,11 +79,7 @@ const PlacesPage = () => {
                             stroke="currentColor"
                             className="w-6 h-6"
                         >
-                            <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                d="M12 4.5v15m7.5-7.5h-15"
-                            />
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>
                         Add new place
                     </Link>
@@ -78,10 +88,7 @@ const PlacesPage = () => {
             {action === "new" && (
                 <div>
                     <form>
-                        {preInput(
-                            "Title",
-                            "title for your place, should be short ahd catchy as in advertisement"
-                        )}
+                        {preInput("Title", "title for your place, should be short ahd catchy as in advertisement")}
                         <input
                             className="indigo"
                             value={title}
@@ -108,10 +115,7 @@ const PlacesPage = () => {
                                 type="text"
                                 placeholder={"Add using a link ...jpg"}
                             />
-                            <button
-                                onClick={addPhotoByLink}
-                                className="bg-gray-200 px-4 rounded-2xl"
-                            >
+                            <button onClick={addPhotoByLink} className="bg-gray-200 px-4 rounded-2xl">
                                 Add&nbsp;photo
                             </button>
                         </div>
@@ -119,23 +123,16 @@ const PlacesPage = () => {
                         <div className=" mt-2 grid gap-2 grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
                             {addedPhotos.length > 0 &&
                                 addedPhotos.map((link) => (
-                                    <div>
+                                    <div className="h-32 flex">
                                         <img
-                                            className="rounded-2xl"
-                                            src={
-                                                "http://localhost:9001/uploads/" +
-                                                link
-                                            }
+                                            className="rounded-2xl w-full object-cover"
+                                            src={"http://localhost:9001/uploads/" + link}
                                             alt=""
                                         />
                                     </div>
                                 ))}
-                            <label className="cursor-pointer flex items-center gap-1 justify-center border bg-transparent rounded-2xl p-2 text-2xl text-gray-600">
-                                <input
-                                    type="file"
-                                    onChange={uploadPhoto}
-                                    className="hidden"
-                                />
+                            <label className="h-32 cursor-pointer flex items-center gap-1 justify-center border bg-transparent rounded-2xl p-2 text-2xl text-gray-600">
+                                <input type="file" multiple onChange={uploadPhoto} className="hidden" />
                                 <svg
                                     xmlns="http://www.w3.org/2000/svg"
                                     fill="none"
@@ -155,25 +152,16 @@ const PlacesPage = () => {
                         </div>
 
                         {preInput("Description", "description of the place")}
-                        <textarea
-                            value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                        />
+                        <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
 
-                        {preInput(
-                            "Perks",
-                            "select all the perkc of your place"
-                        )}
+                        {preInput("Perks", "select all the perkc of your place")}
 
                         <div className="grid mt-2 gap-2 grid-cols-2 md:grid-cols-3 lg:grid-cols-6">
                             <Perks selected={perks} onChange={setPerks} />
                         </div>
 
                         {preInput("Extra info", "house rules, etc")}
-                        <textarea
-                            value={extraInfo}
-                            onChange={(e) => setExtraInfo(e.target.value)}
-                        />
+                        <textarea value={extraInfo} onChange={(e) => setExtraInfo(e.target.value)} />
 
                         {preInput(
                             "Check in&out time",
@@ -196,23 +184,17 @@ const PlacesPage = () => {
                                 <input
                                     className="indigo"
                                     value={checkOut}
-                                    onChange={(e) =>
-                                        setCheckOut(e.target.value)
-                                    }
+                                    onChange={(e) => setCheckOut(e.target.value)}
                                     type="text"
                                     placeholder="11"
                                 />
                             </div>
                             <div>
-                                <h3 className="mt-2 -mb-1">
-                                    Max number of guests
-                                </h3>
+                                <h3 className="mt-2 -mb-1">Max number of guests</h3>
                                 <input
                                     className="indigo"
                                     value={maxGuests}
-                                    onChange={(e) =>
-                                        setMaxGuests(e.target.value)
-                                    }
+                                    onChange={(e) => setMaxGuests(e.target.value)}
                                     type="number"
                                 />
                             </div>
