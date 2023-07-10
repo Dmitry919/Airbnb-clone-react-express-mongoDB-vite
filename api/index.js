@@ -1,9 +1,11 @@
 const express = require('express')
+const fs = require('fs')
 const app = express()
 const mongoose = require('mongoose')
 const cors = require('cors')
 const cookieParser = require('cookie-parser')
 const bcrypt = require('bcrypt')
+const multer = require('multer')
 const jwt = require('jsonwebtoken');
 const imageDownloader = require('image-downloader');
 const User = require('./models/User.js')
@@ -95,4 +97,18 @@ app.post('/upload-by-link', async (req, res) => {
     dest: __dirname + '/uploads/' + newName
   })
   res.json(newName)
+})
+
+const photosMiddleware = multer({ dest: 'uploads/' })
+app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
+  const uploadedFile = []
+  for (let i = 0; i < req.files.length; i++) {
+    const { path, originalname } = req.files[i]
+    const parts = originalname.split('.')
+    const ext = parts[parts.length - 1]
+    const newPath = path + '.' + ext
+    fs.renameSync(path, newPath)
+    uploadedFile.push(newPath.replace('uploads\\', ''))
+  }
+  res.json(uploadedFile)
 })
