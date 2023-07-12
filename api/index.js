@@ -9,6 +9,7 @@ const multer = require('multer')
 const jwt = require('jsonwebtoken');
 const imageDownloader = require('image-downloader');
 const User = require('./models/User.js')
+const Place = require('./models/Place.js')
 require('dotenv').config()
 
 const port = 9001
@@ -111,4 +112,32 @@ app.post('/upload', photosMiddleware.array('photos', 100), (req, res) => {
     uploadedFile.push(newPath.replace('uploads\\', ''))
   }
   res.json(uploadedFile)
+})
+
+app.post('/places', (req, res) => {
+  mongoose.connect(process.env.MONGO_URL)
+  const { token } = req.cookies
+  const { title,
+    address,
+    description,
+    perks,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests, } = req.body
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) throw err
+    const placeDoc = await Place.create({
+      owner: userData.id,
+      title,
+      address,
+      description,
+      perks,
+      extraInfo,
+      checkIn,
+      checkOut,
+      maxGuests,
+    })
+    res.json(placeDoc)
+  })
 })
