@@ -23,4 +23,3 @@ button.primary {
     background-color: #f5385d;
     @apply bg-primary p-2 w-full text-white rounded-2xl;
 }
-/* mt-1 block w-full px-3 py-2 bg-white border border-slate-300 rounded-2xl text-sm shadow-sm focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500; */

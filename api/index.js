@@ -13,7 +13,7 @@ const Place = require('./models/Place.js')
 require('dotenv').config()
 
 const port = 9001
-const Salt = bcrypt.genSaltSync(10)
+const Salt = bcrypt.genSaltSync(8)
 const jwtSecret = 'dfdflkfnkvkwnefknknmwekf'
 
 app.use(express.json())
@@ -121,6 +121,7 @@ app.post('/places', (req, res) => {
     address,
     description,
     perks,
+    addedPhotos,
     extraInfo,
     checkIn,
     checkOut,
@@ -132,6 +133,7 @@ app.post('/places', (req, res) => {
       title,
       address,
       description,
+      photos: addedPhotos,
       perks,
       extraInfo,
       checkIn,
@@ -139,5 +141,52 @@ app.post('/places', (req, res) => {
       maxGuests,
     })
     res.json(placeDoc)
+  })
+})
+
+app.get('/places', (req, res) => {
+  mongoose.connect(process.env.MONGO_URL)
+  const { token } = req.cookies
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    const { id } = userData
+    res.json(await Place.find({ owner: id }))
+  })
+})
+
+app.get('/places/:id', async (req, res) => {
+  const { id } = req.params
+  res.json(await Place.findById(id))
+})
+
+app.put('/places', async (req, res) => {
+  mongoose.connect(process.env.MONGO_URL)
+  const { token } = req.cookies
+  const { id, title,
+    address,
+    description,
+    perks,
+    addedPhotos,
+    extraInfo,
+    checkIn,
+    checkOut,
+    maxGuests, } = req.body
+  jwt.verify(token, jwtSecret, {}, async (err, userData) => {
+    if (err) throw err
+    const placeDoc = await Place.findById(id)
+    if (userData.id === placeDoc.owner.toString()) {
+      placeDoc.set({
+        title,
+        address,
+        description,
+        photos: addedPhotos,
+        perks,
+        extraInfo,
+        checkIn,
+        checkOut,
+        maxGuests,
+      })
+      await placeDoc.save()
+      res.json('ok')
+    }
   })
 })
