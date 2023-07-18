@@ -42,6 +42,7 @@ const PlacesPage = () => {
                 {places.length > 0 &&
                     places.map((item) => (
                         <Link
+                            key={item._id}
                             to={"/account/places/" + item._id}
                             className="flex cursor-pointer gap-4 bg-gray-100 p-4 rounded-2xl"
                         >
