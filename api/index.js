@@ -10,6 +10,7 @@ const jwt = require('jsonwebtoken');
 const imageDownloader = require('image-downloader');
 const User = require('./models/User.js')
 const Place = require('./models/Place.js')
+const Booking = require('./models/Booking.js')
 require('dotenv').config()
 
 const port = 9001
@@ -162,23 +163,17 @@ app.get('/places/:id', async (req, res) => {
 app.put('/places', async (req, res) => {
   mongoose.connect(process.env.MONGO_URL)
   const { token } = req.cookies
-  const { id, title, price, address, description, perks,
-    addedPhotos, extraInfo, checkIn, checkOut, maxGuests } = req.body
+  const {
+    id, title, price, address, description, perks,
+    addedPhotos, extraInfo, checkIn, checkOut, maxGuests
+  } = req.body
   jwt.verify(token, jwtSecret, {}, async (err, userData) => {
     if (err) throw err
     const placeDoc = await Place.findById(id)
     if (userData.id === placeDoc.owner.toString()) {
       placeDoc.set({
-        title,
-        address,
-        description,
-        photos: addedPhotos,
-        perks,
-        extraInfo,
-        checkIn,
-        checkOut,
-        maxGuests,
-        price
+        title, address, description, photos: addedPhotos, perks,
+        extraInfo, checkIn, checkOut, maxGuests, price
       })
       await placeDoc.save()
       res.json('ok')
@@ -189,4 +184,16 @@ app.put('/places', async (req, res) => {
 app.get('/places', async (req, res) => {
   mongoose.connect(process.env.MONGO_URL)
   res.json(await Place.find())
+})
+
+app.post('/bookings', (req, res) => {
+  const { place, checkIn, checkOut, name, phone, price } = req.body
+
+  Booking.create({
+    place, checkIn, checkOut, name, phone, price
+  }).then((doc) => {
+    res.json(doc)
+  }).catch((err) => {
+    throw err
+  })
 })
